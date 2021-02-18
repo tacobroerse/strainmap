@@ -70,6 +70,8 @@ starttime = alltimes(1);
 % ....
 % yn yn yn yn
 
+Cells.RefType='Lagrangian';
+
 switch Op.DisplacementGradient
     
     case 'Simple'

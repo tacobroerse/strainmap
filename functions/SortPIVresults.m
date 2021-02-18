@@ -172,6 +172,8 @@ else
     disp(strcat('current units:',PIVresults.units))
 end
 
+
+
 %% reverse y axis (because Images have a flipped y axis in matlab)
 if Op.UpwardYAxis && strcmp(PIVresults.DirectionYaxis,'Downward')
     disp('change y-axis to pointing upward')
@@ -225,7 +227,7 @@ if Op.Rotate
                     PIVresultsRot.v_original{itime} = rot90(PIVresults.u_original{itime},1);
                     PIVresultsRot.v_filtered{itime} = rot90(PIVresults.u_filtered{itime},1);
                     % rotate typevector (mask)
-                    PIVresultsRot.typevector_original{itime} = rot90(PIVresults.typevector_original{itime},-1);
+                    PIVresultsRot.typevector_original{itime} = rot90(PIVresults.typevector_original{itime},1);
                     
                 end
             case 90
@@ -248,6 +250,7 @@ if Op.FlipuDirection
     % flip sign of u
     for i=1:ntimes
         PIVresults.u_original{i}=-PIVresults.u_original{i};
+        
         if isfield(PIVresultsorig,'u_filtered')
             PIVresults.u_filtered{i}=-PIVresults.u_filtered{i};
         end
@@ -307,16 +310,12 @@ end
 % make all times (using original number of time steps)
 SingleTimeStep=1;
 if isempty(Param.TimeStep)
-    if numel(Param.TimeStep>1)
         SingleTimeStep=0;
-    else
-        SingleTimeStep=1;
-    end
 end
 if numel(Param.TimeStep)>1
-    SingleTimeStep=0;
-    
+    SingleTimeStep=0;  
 end
+
 
 if SingleTimeStep
     AllTimes = linspace(1,nobs,nobs)*Param.TimeStep;
@@ -328,6 +327,38 @@ else
     end
 end
 
+% replace inf with nan
+for i=1:ntimes
+    indexinf=isinf(PIVresults.u_original{i}) | isinf(PIVresults.v_original{i});
+    if ~isempty(find(indexinf))
+        if i==1
+        disp('replace inf with nan')
+        end
+        PIVresults.u_original{i}(indexinf)=NaN;
+        PIVresults.v_original{i}(indexinf)=NaN;
+    end
+    if isfield(PIVresultsorig,'u_filtered')
+        indexinf=isinf(PIVresults.u_filtered{i}) | isinf(PIVresults.v_filtered{i});
+        if ~isempty(find(indexinf))
+            if i==1
+            disp('replace inf with nan for filtered solutions')
+            end
+            PIVresults.u_filtered{i}(indexinf)=NaN;
+            PIVresults.v_filtered{i}(indexinf)=NaN;
+        end
+        
+    end
+    if isfield(PIVresultsorig,'u_smoothed')
+       indexinf=isinf(PIVresults.u_smoothed{i}) | isinf(PIVresults.v_smoothed{i});
+        if ~isempty(find(indexinf))
+            if i==1
+            disp('replace inf with nan for smoothed displacements')
+            end
+            PIVresults.u_smoothed{i}(indexinf)=NaN;
+            PIVresults.v_smoothed{i}(indexinf)=NaN;
+        end
+    end
+end
 % select epochs
 Epochs.Time=AllTimes;
 Epochs.SelectedTimes=AllTimes(Epochs.Index);

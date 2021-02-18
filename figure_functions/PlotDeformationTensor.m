@@ -95,6 +95,21 @@ end
 Interpreter = 'tex';
 % string for saving figures
 TensorTypeStr=PlotStrain;
+
+% check whether Cell quantities are Lagrangian or Eulerian
+if ~isfield(Cells,'RefType')
+    disp('no Cells.RefType found, assuming Lagrangian quantities')
+    RefType='Lagrangian';
+else
+    if strcmp(Cells.RefType,'Lagrangian')
+        RefType=Cells.RefType;
+    elseif strcmp(Cells.RefType,'Eulerian')
+        RefType=Cells.RefType;
+    else
+        error('unknown reference type')
+    end
+end
+
 % selection of quantity to plot
 if strcmp(PlotStrain,'IncrementalInfinitesimalStrain')
     fieldxx = squeeze(Cells.InfStrainIncrmt{itime}(1,1,:,:));
@@ -103,13 +118,13 @@ if strcmp(PlotStrain,'IncrementalInfinitesimalStrain')
     fieldantixy = Cells.VorticityIncrmt{itime};
     tensorstr={'\epsilon_{xx}','\epsilon_{xy}','\omega','\epsilon_{yy}'};
     deformstr='incremental infinitesimal strain';  
-% elseif strcmp(PlotStrain,'SumInfinitesimalStrain')
-%     fieldxx = squeeze(Cells.InfStrainSum{itime}(1,1,:,:));
-%     fieldxy = squeeze(Cells.InfStrainSum{itime}(1,2,:,:));
-%     fieldyy = squeeze(Cells.InfStrainSum{itime}(2,2,:,:));
-%     fieldantixy = Cells.VorticitySum{itime};
-%     tensorstr={'\epsilon_{xx}','\epsilon_{xy}','\omega','\epsilon_{yy}'};
-%     deformstr='sum infinitesimal strain';
+elseif strcmp(PlotStrain,'IncrementalInfinitesimalStrain')
+    fieldxx = squeeze(Cells.InfStrainIncrmt{itime}(1,1,:,:));
+    fieldxy = squeeze(Cells.InfStrainIncrmt{itime}(1,2,:,:));
+    fieldyy = squeeze(Cells.InfStrainIncrmt{itime}(2,2,:,:));
+    fieldantixy = Cells.VorticityIncrmt{itime};
+    tensorstr={'\epsilon_{xx}','\epsilon_{xy}','\omega','\epsilon_{yy}'};
+    deformstr='incremental infinitesimal strain';  
 elseif strcmp(PlotStrain,'InfinitesimalStrain')
     fieldxx = squeeze(Cells.InfStrain{itime}(1,1,:,:));
     fieldxy = squeeze(Cells.InfStrain{itime}(1,2,:,:));
@@ -305,7 +320,12 @@ if Op.SaveFigures
         mkdir(Param.SaveDir)
         disp(strcat('making folder:',Param.SaveDir))
     end
+    if strcmp(RefType,'Eulerian')
+        % add eulerian to file name
+        SaveFigName=strcat(Param.SaveDir,'/','Eulerian_',TensorTypeStr,'_',fileepochstr);
+    else
     SaveFigName=strcat(Param.SaveDir,'/',TensorTypeStr,'_',fileepochstr);
+    end
     savefig(fig,SaveFigName)
     if Op.SavePng
         % save as png
