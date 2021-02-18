@@ -43,6 +43,9 @@ elseif strcmp(Op.FileType,'geotiff')
         % check all files that are available in the directory
         files=dir(strcat(PIV.File,'*'));
         nfiles=length(files);
+        if isempty(files)
+            error('no displacement files found')
+        end
         % open all files
         ktime=0;
         for ifile=1:nfiles
@@ -50,11 +53,11 @@ elseif strcmp(Op.FileType,'geotiff')
             date1 = files(ifile).name(PIV.date1index);
             date2 = files(ifile).name(PIV.date2index);
             % check whether the date is a number
-            if ~isnumeric(str2num(date1))
+            if ~isnumeric(str2num(date1)) || isempty(str2num(date1))
                 error('date is not numeric, please change PIV.date1index')
             end
-            if ~isnumeric(str2num(date2))
-                error('date is not numerica, please change PIV.date2index')
+            if ~isnumeric(str2num(date2)) || isempty(str2num(date2))
+                error('date is not numeric, please change PIV.date2index')
             end
             % check whether dates are
             datenum1 = datenum(date1,'yyyymmdd');
@@ -80,32 +83,20 @@ elseif strcmp(Op.FileType,'geotiff')
                 % has the right time span
                 % check whether dates are sequential
                 if datenum1==datenum2prev+1
-                    
-                    
+                else
+                 
+                    warning('dates are not sequential')
+                    warning(['start date this file:',num2str(date1)])
+                    warning(['previous date last file:',num2str(date2prev)])
+                    error('quitting')
+                end   
                     
                     % load all files
                     [temp,R]=geotiffread(strcat(PIV.Dir,files(ifile).name));
                     includedata = 1;
                     
-                    
-                    %                 elseif strcmp(PIV.Settings,'12_day_intervals')
-                    %                     if strcmp(date1,date2prev) && timespandefault == timespan
-                    %
-                    %                         [temp,R]=geotiffread(strcat(PIV.Dir,files(ifile).name));
-                    %                         includedata = 1;
-                    %                         disp(strcat('loading:',files(ifile).name))
-                    %                     else
-                    %                         % disp(strcat('skip loading:',files(ifile).name))
-                    %                         includedata = 0;
-                    %                     end
-                    %                 end
-                    
-                else
-                    warning('dates are not sequential')
-                    warning(['start date this file:',num2str(date1)])
-                    warning(['previous date last file:',num2str(date2prev)])
-                    error('quitting')
-                end
+            
+              
             end
             
             if includedata

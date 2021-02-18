@@ -122,7 +122,7 @@ subplot(m,n,1)
 imAlpha=ones(size(fieldx));
 imAlpha(isnan(fieldx))=0;
 if strcmp(Op.Coordinates,'Initial')
-    imagesc(xvec,yvec,fieldx,'AlphaData',imAlpha)
+    imagesc(xvec,yvec,flipud(fieldx),'AlphaData',flipud(imAlpha))
 elseif strcmp(Op.Coordinates,'Updated')
     % vertex array (2 columns)
     % itime + 1 has the updated coordinates
@@ -135,6 +135,8 @@ axis equal
 axis tight
 if Op.UpwardYAxis==0
     set(gca,'YDir','reverse')
+else
+    set(gca,'YDir','normal')
 end
 
 title(tensorstr{1},'interpreter',Interpreter,'FontSize',Param.TitleFontSize)
@@ -151,7 +153,7 @@ subplot(m,n,2)
 imAlpha=ones(size(fieldy));
 imAlpha(isnan(fieldy))=0;
 if strcmp(Op.Coordinates,'Initial')
-    imagesc(xvec,yvec,fieldxy,'AlphaData',imAlpha)
+    imagesc(xvec,yvec,flipud(fieldy),'AlphaData',flipud(imAlpha))
 elseif strcmp(Op.Coordinates,'Updated')
     patch('vertices',vertices, 'faces',Cells.Connectivity,'FaceVertexCData',reshape(fieldy',nx*ny,1),'FaceColor','flat','EdgeColor',EdgeColor,'LineWidth',LineWidth)
     
@@ -161,6 +163,8 @@ axis equal
 axis tight
 if Op.UpwardYAxis==0
     set(gca,'YDir','reverse')
+    else
+    set(gca,'YDir','normal')
 end
 title(tensorstr{2},'interpreter',Interpreter,'FontSize',Param.TitleFontSize)
 caxis([-cmaxfield cmaxfield])

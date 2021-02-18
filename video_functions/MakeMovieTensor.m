@@ -90,7 +90,20 @@ Points.maxx=max([pointsendx ; Points.x{Epochs.Index(1)}],[],'all');
 Points.miny=min([pointsendy ; Points.y{Epochs.Index(1)}],[],'all');
 Points.maxy=max([pointsendy ; Points.y{Epochs.Index(1)}],[],'all');
 
-
+CumulativeMeasure=0;
+% check whether Cell quantities are Lagrangian or Eulerian
+if ~isfield(Cells,'RefType')
+    disp('no Cells.RefType found, assuming Lagrangian quantities')
+    RefType='Lagrangian';
+else
+    if strcmp(Cells.RefType,'Lagrangian')
+        RefType=Cells.RefType;
+    elseif strcmp(Cells.RefType,'Eulerian')
+        RefType=Cells.RefType;
+    else
+        error('unknown reference type')
+    end
+end
 
 if strcmp(Op.Coordinates,'Initial')
     % nothing special, just take initial coordinates
@@ -106,7 +119,13 @@ end
 clear Frame v
 % string for saving figures
 TensorTypeStr=PlotStrain;
-VideoName=strcat(Param.SaveDir,TensorTypeStr,'_video','.mp4');
+
+    
+if strcmp(RefType,'Eulerian')
+    VideoName=strcat(Param.SaveDir,'Eulerian_',TensorTypeStr,'_video','.mp4');
+else
+    VideoName=strcat(Param.SaveDir,TensorTypeStr,'_video','.mp4');
+end
 if ~isfolder(Param.SaveDir)
     mkdir Param.SaveDir
 end
@@ -157,6 +176,7 @@ for ii=1:nEpochs
             cmax=prctile(abs(Cells.InfStrain{end}(:)),Param.ColorPercentile);
             cmaxantixy=prctile(abs(Cells.Vorticity{end}(:)),Param.ColorPercentile);
         end
+        CumulativeMeasure=1;
     elseif strcmp(PlotStrain,'IncrementalGreenFiniteStrain')
         fieldxx = squeeze(Cells.GreenStrainIncrmt{itime}(1,1,:,:));
         fieldxy = squeeze(Cells.GreenStrainIncrmt{itime}(1,2,:,:));
@@ -181,6 +201,7 @@ for ii=1:nEpochs
             cmax=prctile(abs(Cells.GreenStrain{end}(:)),Param.ColorPercentile);
             cmaxantixy=0;
         end
+        CumulativeMeasure=1;
     elseif strcmp(PlotStrain,'LeftStretchV')
         fieldxx = squeeze(Cells.V{itime}(1,1,:,:));
         fieldxy = squeeze(Cells.V{itime}(1,2,:,:));
@@ -197,6 +218,7 @@ for ii=1:nEpochs
             cmax=max(cmax);
             cmaxantixy=max(cmaxantixy);
         end
+        CumulativeMeasure=1;
         CenterColorAtOne=1;
     elseif strcmp(PlotStrain,'RightStretchU')
         fieldxx = squeeze(Cells.U{itime}(1,1,:,:));
@@ -211,6 +233,7 @@ for ii=1:nEpochs
             cmaxantixy=prctile(abs(Cells.FiniteRotAngle{end}(:)),Param.ColorPercentile);
         end
         CenterColorAtOne=1;
+        CumulativeMeasure=1;
     elseif strcmp(PlotStrain,'DisplacementGradient')
         fieldxx = squeeze(Cells.H{itime}(1,1,:,:));
         fieldxy = squeeze(Cells.H{itime}(1,2,:,:));
@@ -243,6 +266,7 @@ for ii=1:nEpochs
             cmax=prctile(abs(Cells.HSum{end}(:)),Param.ColorPercentile);
             cmaxantixy=cmax;
         end
+        CumulativeMeasure=1;
     else
         PlotStrain
         error('invalid strain option')
@@ -324,7 +348,11 @@ end
     
     % and add time stamp
     if isfield(Epochs,'StartDate')
+        if CumulativeMeasure
         timestr=strcat({'period: '},Epochs.StartDate{1},'-',Epochs.EndDate{itime});
+        else
+             timestr=strcat({'period: '},Epochs.StartDate{itime},'-',Epochs.EndDate{itime});
+        end
     else
         timestr=strcat({'time: '},{num2str(Epochs.Time(itime),'%4.1f\n')},strcat({' '},Param.TimeUnitPlot));
     end
