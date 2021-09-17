@@ -1,4 +1,5 @@
 function PlotStrainType(Cells,Param,Op,Points,PlotType,PlotEpoch,Epochs,Fault,dxfstruct)
+% PlotStrainType(Cells,Param,Op,Points,PlotType,PlotEpoch,Epochs,Fault,dxfstruct)
 %PlotStrainType plots the type of strain (shortening, strike-slip,
 % extension) from the logarithmic principal stretches, i.e. the Hencky
 % strains, the logarithm of the principal stretches V.
@@ -80,7 +81,7 @@ EdgeColor=Param.GridColor;
 NaNColor=1*[1 1 1];
 
 % size of cell array
-indexval=find(~isnan(Points.x{end}));
+indexval=find(~isnan(Points.x{end}) & ~isinf(Points.x{end}));
 xlims=[min([Points.x{end}(indexval); Points.x{1}(indexval)]) max([Points.x{end}(indexval); Points.x{1}(indexval)])];
 ylims=[min([Points.y{end}(indexval); Points.y{1}(indexval)]) max([Points.y{end}(indexval); Points.y{1}(indexval)])];
 

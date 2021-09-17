@@ -253,7 +253,7 @@ for itime=1:ntimes
         RotAngles = linspace(-SynOp.totalangle,SynOp.totalangle,SynOp.nRotAngles)*pi/180;
         RotMat = @(theta) [cos(theta) -sin(theta) ; sin(theta) cos(theta)];
         
-        ny=2*(2*SynOp.nRotAngles+1);
+        
         ny=2*(2*SynOp.nRotAngles+1);
         nx=2*(2*(SynOp.nSlip+1)+1);
         PIVresults.x{itime}=NaN(ny,nx);

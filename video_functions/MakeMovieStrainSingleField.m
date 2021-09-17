@@ -143,7 +143,7 @@ for ii=1:nEpochs
     % clear frame
     clf
     
- box on
+    box on
     daspect([1 1 1])
     
     
@@ -196,11 +196,11 @@ for ii=1:nEpochs
     elseif strcmp(PlotType,'Dilatation')
         CenterColorAtOne=1;
         field = real(Cells.Dilatation{itime});
-        
+     
         if ii==1
             titlestr='dilatation';
             deformstr='dilatation';
-            cmax=max(abs(squeeze(Cells.Dilatation{end}(:))-1));
+            cmax=prctile(abs(squeeze(Cells.Dilatation{end}(:))-1),Param.ColorPercentile);
         end
         
         invertcolor = 1;
@@ -215,6 +215,17 @@ for ii=1:nEpochs
             % color axes
             cmax=90;
             CyclicColor=1;
+        end
+    elseif strcmp(PlotType,'MagnitudeStrain')
+       
+        field = (Cells.MagnitudeStrain{itime});
+       
+        if ii==1
+            deformstr='strain magnitude';
+            titlestr='largest principal Hencky strain';
+            % color axes
+            cmax=prctile(abs(squeeze(Cells.MagnitudeStrain{end}(:))),Param.ColorPercentile);
+           
         end
     else
         PlotType
@@ -263,7 +274,7 @@ for ii=1:nEpochs
         
     end
     
-      
+    
     xlim([Points.minx Points.maxx])
     ylim([Points.miny Points.maxy])
     
@@ -331,8 +342,8 @@ for ii=1:nEpochs
     
     text(xpostext,ypostext,timestr,'FontSize',Settings.FontSize,'HorizontalAlignment','Center','FontSize',Param.TitleFontSize)
     
- 
-   
+    
+    
     drawnow
     % make frame
     Frame = getframe(fig);

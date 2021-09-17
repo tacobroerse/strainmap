@@ -106,7 +106,7 @@ elseif strcmp(Op.Coordinates,'Updated')
     xvec=Points.x{itime+1}; % quadrilateral x coordinates, itime plus 1 to have fully updated coordinates
     yvec=Points.y{itime+1}; % quadrilateral y coordinates
     
-    if strcmp(PlotType,'DecompositionDirection')
+    if strcmp(PlotType,'DecompositionDirection') || strcmp(PlotType,'DecompositionDirectionandMagnitude')
      % take updated coordinates, and determine mid points
     xmidvec=0.25*(xvec(1:end-1,1:end-1)+xvec(2:end,1:end -1)+xvec(1:end-1,2:end)+xvec(2:end,2:end));
     ymidvec=0.25*(yvec(1:end-1,1:end-1)+yvec(2:end,1:end -1)+yvec(1:end-1,2:end)+yvec(2:end,2:end));
@@ -121,11 +121,30 @@ PlotTypeStr=PlotType;
 if strcmp(PlotType,'DecompositionDirection')
    
     % rotation angle from rotation tensor R (polar decomposition)
-    field = squeeze(CellsLaplace.RefAngle{end})*180/pi;
+    if strcmp(Op.Coordinates,'Initial')
+    fieldvec = squeeze(CellsLaplace.RefAngle{itime})*180/pi;
+    elseif strcmp(Op.Coordinates,'Updated')
+        % rotate reference orientation by rotation during deformation
+        fieldvec = squeeze(CellsLaplace.RefAngle{itime}).*squeeze(CellsLaplace.theta{itime})*180/pi;
+    end
+    % scalar field is the same as decomposition direction
+    field=fieldvec;
 circularcolor=1;
 colorstartat0=1;
     deformstr='decomposition direction [deg]';  
-% elseif strcmp(PlotType,'MeanRotation')
+elseif strcmp(PlotType,'DecompositionDirectionandMagnitude')
+    % plot strain magnitude and arrows of decomposition direction
+    if strcmp(Op.Coordinates,'Initial')
+        fieldvec = squeeze(CellsLaplace.RefAngle{itime})*180/pi;
+    elseif strcmp(Op.Coordinates,'Updated')
+        % rotate reference orientation by rotation during deformation
+        fieldvec = squeeze(CellsLaplace.RefAngle{itime}).*squeeze(CellsLaplace.theta{itime})*180/pi;
+    end
+    % scalar field is strain magnitude
+    field=Cells.MagnitudeStrain{itime};
+    circularcolor=0;
+    
+    deformstr='finite strain magnitude [deg]'; 
 %    
 %     % rotation angle from rotation tensor R (polar decomposition)
 %     field = squeeze(Cells.FiniteRotAngle{itime});
@@ -184,12 +203,12 @@ elseif strcmp(Op.Coordinates,'Updated')
     % itime + 1 has the updated coordinates
     vertices=[xvec(Cells.IndexingVertices) yvec(Cells.IndexingVertices)];
     patch('vertices',vertices,'faces',Cells.Connectivity,'FaceVertexCData',reshape(field',nx*ny,1),'FaceColor','flat','EdgeColor',EdgeColor,'LineWidth',LineWidth)
-    if strcmp(PlotType,'DecompositionDirection')
+    if strcmp(PlotType,'DecompositionDirection') || strcmp(PlotType,'DecompositionDirectionandMagnitude')
        % plot arrows as well 
-       u=cosd(field);
-       v=sind(field);
-       quiver(xmidvec,ymidvec,u,v,'b')
-       quiver(xmidvec,ymidvec,-u,-v,'b')
+       u=cosd(fieldvec);
+       v=sind(fieldvec);
+       quiver(xmidvec,ymidvec,u,v,'k')
+       quiver(xmidvec,ymidvec,-u,-v,'k')
     end
 end
 

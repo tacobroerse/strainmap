@@ -1,0 +1,3 @@
+changes made:
+updated error in mask when rotation is applied
+added eulerian analysis, for viewing Eulerian incremental strain 

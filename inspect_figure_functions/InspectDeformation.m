@@ -1,4 +1,4 @@
-function InspectDeformation(Cells,Param,Op,Points,PlotType,PlotEpoch)
+function InspectDeformation(Cells,Param,Op,Points,PlotType,PlotEpoch,Epochs)
 %InspectDeformation Show interactive figure of model and allow for
 % inspecting time evolution of stretch/strain of single cells.
 % click 1 to zoom out, click 2 to zoom in. Click on cell location to see
@@ -49,6 +49,12 @@ if nargin < 5
     PlotEpoch = 'final';
 end
 
+
+if exist('Epochs','var')
+   
+else
+    Epochs=[];
+end
 % color for grid
 Op.Colorbar=1;
 EdgeColor=Param.GridColor;
@@ -283,7 +289,7 @@ while 0<1
             else
                 
                 % make figure
-                MakeFigureRotationInTime(ix,iy,Cells,PlotType,xvec,yvec,field,imAlpha,Op,Cmap,Param)
+                MakeFigureRotationInTime(ix,iy,Cells,PlotType,xvec,yvec,field,imAlpha,Op,Cmap,Param,Epochs)
             end
             break
         end
@@ -349,7 +355,7 @@ while icell <= 8  && ~CellFound
 end
 end
 
-function MakeFigureRotationInTime(ix,iy,Cells,PlotType,xvec,yvec,field,imAlpha,Op,Cmap,Param)
+function MakeFigureRotationInTime(ix,iy,Cells,PlotType,xvec,yvec,field,imAlpha,Op,Cmap,Param,Epochs)
 % make detail figure of rotation/strain type/dilatation in time
 
 alltimes=length(Cells.F);
@@ -408,7 +414,13 @@ end
 hold on
 box on
 grid on
-timevec=[1:alltimes];
+
+if isempty(Epochs)
+    timevec=[1:alltimes];
+else
+    timevec=Epochs.Time(1:alltimes);
+    
+end
 h1(1)=plot(timevec,vec,'.-','Color',cmap(1,:));
 if strcmp(PlotType,'StrainType') || strcmp(PlotType,'Dilatation') || strcmp(PlotType,'IncrmtStrainType')
     legendstr1{1}='mean strain type';
@@ -437,7 +449,7 @@ if strcmp(PlotType,'StrainType') || strcmp(PlotType,'Dilatation') || strcmp(Plot
     ylim([-maxy maxy]+1)
     
     yyaxis left
-    xlim([1 alltimes])
+    xlim([timevec(1) timevec(end)])
     % magnitude of mean strain
     pos2=[0.15 0.1 0.35 0.35];
     ax2=subplot('Position',pos2);
@@ -459,7 +471,7 @@ if strcmp(PlotType,'StrainType') || strcmp(PlotType,'Dilatation') || strcmp(Plot
     
     ylabel('strain magnitude []')
     
-    xlim([1 alltimes])
+    xlim([timevec(1) timevec(end)])
     xlabel('epoch')
     
     % plot field
@@ -490,10 +502,12 @@ if strcmp(PlotType,'StrainType') || strcmp(PlotType,'Dilatation') || strcmp(Plot
     NaNColor=0.25*[1 1 1];
     set(gca,'color',NaNColor);
     % coordinate limits
-    xsize=max(xvec(:))-min(xvec(:));
+    indexnonan=~isnan(xvec)&~isinf(xvec);
+    xsize=max(xvec(indexnonan),[],'all')-min(xvec(indexnonan),[],'all');
     windowsize=xsize/10;
     xlim(mean(xVertices)+[-1 1]*windowsize/2);
     ylim(mean(yVertices)+[-1 1]*windowsize/2*0.8/0.3);
+   daspect([1 1 1])
     if Op.UpwardYAxis==0
         set(gca,'YDir','reverse')
     end

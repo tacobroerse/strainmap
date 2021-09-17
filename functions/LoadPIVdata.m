@@ -1,8 +1,8 @@
-function [PIVresults] = LoadPIVdata(PIV,Op)
+function [PIVresults,GeoTiffInfo] = LoadPIVdata(PIV,Op)
 %LoadPIVdata loads displacement (or velocity) data from PIVlab or geotiff
 %
 %   [PIVresults] = LoadPIVdata(PIV,Op)
-%       PIV, structure with containing PIV.File containing the file name
+%       PIV, structure PIV.File containing the file name
 %       including path (PIVlab data), or PIV.Dir (geotiff) containing the
 %       path to the data.
 %       and if Op.Synthetic = 1, a sythetic field is constructed.
@@ -30,8 +30,25 @@ end
 
 if strcmp(Op.FileType,'Pivlab')
     % do not load other components from PIV lab because these are not used
-    PIVresults=load(PIV.File,'u_original','v_original','x','y','u_smoothed','v_smoothed','u_filtered','v_filtered','units','typevector_original');
     
+    PIVresults=load(PIV.File,'u_original','v_original','x','y','u_smoothed','v_smoothed','u_filtered','v_filtered','units','typevector_original');
+    % check basic inputs
+    if ~isfield(PIVresults,'x')
+        error('no field "x" found. wrong type of PIVlab file has been supplied, use export in PIVlab to save outputs as .mat file')
+    elseif ~isfield(PIVresults,'y')
+        error('no field "y" found. wrong type of PIVlab file has been supplied, use export in PIVlab to save outputs as .mat file')
+    elseif ~isfield(PIVresults,'u_original')
+        error('no field "u_original" found. wrong type of PIVlab file has been supplied, use export in PIVlab to save outputs as .mat file')
+    elseif ~isfield(PIVresults,'v_original')
+        error('no field "v_original" found. wrong type of PIVlab file has been supplied, use export in PIVlab to save outputs as .mat file')
+    elseif ~isfield(PIVresults,'units')
+        error('no field "units" found. wrong type of PIVlab file has been supplied, use export in PIVlab to save outputs as .mat file')
+    end
+    
+    if isempty(PIVresults.u_original)
+        error('empty results, please first produce results with PIV and afterwards export output')
+    end
+
 elseif strcmp(Op.FileType,'geotiff')
     if ~Op.MultipleInputFiles
         error('not yet implemented')
@@ -134,6 +151,10 @@ elseif strcmp(Op.FileType,'geotiff')
                 date2prev=date2;
                 datenum2prev=datenum2;
                 
+                % save geotiff info
+                if ifile == 1
+                GeoTiffInfo=geotiffinfo(strcat(PIV.Dir,files(ifile).name));
+                end
             end
         end
     end

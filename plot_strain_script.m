@@ -57,22 +57,27 @@ Param.TimeStep = 45/60; % 45 seconds
 
 %Epoch.Index=[1:10]; % smaller selection of epochs, than what is available
 
-
+Op.Synthetic=0;
 % if synthetic model is chosen, set a certain type of synthetic model
 if Op.Synthetic
     
-    Op.TypeSynthetic='elongationx';
-    Op.TypeSynthetic='elongationy';
-    Op.TypeSynthetic='shearzoney';
-    Op.TypeSynthetic='shearzonex';
-    Op.TypeSynthetic='rotation';
-    Op.TypeSynthetic='simpleshear';
-    Op.TypeSynthetic='smoothrotationshearzonex';
+ %   Op.TypeSynthetic='elongationx';
+ %   Op.TypeSynthetic='elongationy';
+ %   Op.TypeSynthetic='shearzoney';
+ %   Op.TypeSynthetic='shearzonex';
+ %   Op.TypeSynthetic='rotation';
+ %   Op.TypeSynthetic='simpleshear';
+ %   Op.TypeSynthetic='smoothrotationshearzonex';
     Op.TypeSynthetic='smoothrotationshearzoney';
     
-    Op.TypeSynthetic='selection_slip';
+ %   Op.TypeSynthetic='selection_slip';
     Model.Name=strcat('synthetic_',Op.TypeSynthetic);
     SynOp=[];
+    SynOp.ntimes=10
+    SynOp.nx=20;
+    SynOp.ny=20;
+    SynOp.totaldispl=10;
+    SynOp.totalangle=50
 end
 
 
@@ -113,8 +118,10 @@ if ~isempty(Epochs) && ~isempty(Epochs.Index)
 end
 Param.Dir = strcat(PIV.Dir,Model.Name,'_Strain_results_',SmoothStr,GridRefinementStr,EpochStr);
 Param.SaveDir = strcat(Param.Dir,'_Grid_',Op.DisplacementGradient,'/');
-Param.SaveFile=strcat(Param.SaveDir,'saved_results.mat');
+Param.SaveFile = strcat(Param.SaveDir,'saved_results.mat');
 
+% if there are previously saved results, these can be reloaded using: load(Param.SaveFile)
+% 
 
 %% load PIV results
 if Op.Synthetic
